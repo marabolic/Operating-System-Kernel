@@ -13,15 +13,15 @@ ID Thread::getId(){
 
 }
 
-static ID Thread::getRunningId(){
+ID Thread::getRunningId(){
 
 }
 	
-static Thread * Thread::getThreadById(ID id){
+Thread * Thread::getThreadById(ID id){
 
 }
 
 
-void Thread::dispatch() {
+void dispatch() {
    
 }

@@ -5,7 +5,7 @@
 class KernelSem{
 
 
-}
+};
 
 
 #endif
