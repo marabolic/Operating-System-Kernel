@@ -4,15 +4,14 @@
 
 
 class PCB {
+public:
     unsigned sp;
     unsigned ss;
     unsigned bp;
     unsigned finished;
+    unsigned *stack;
+
     
-
-
-public:
-
     void wrapper();
 };
 

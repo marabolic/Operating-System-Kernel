@@ -1,0 +1,4 @@
+{
+    "typescript.suggest.completeFunctionCalls": true,
+    "C_Cpp.errorSquiggles": "Enabled"
+}

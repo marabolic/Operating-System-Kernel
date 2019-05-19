@@ -2,8 +2,11 @@
 #ifndef _queue_h_
 #define _queue_h_
 
+
+
 #include "PCB.h"
 
+#define NULL 0
 
 class PCB;
 
