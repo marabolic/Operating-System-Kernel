@@ -5,10 +5,7 @@
     len = 0;
     first = last = NULL;
  }
-
- void Queue::sort() {
-   
- }
+ 
 
 void Queue::insert(PCB *pcb){
     Node *n = new Node();

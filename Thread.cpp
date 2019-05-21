@@ -6,6 +6,7 @@ Thread::Thread(StackSize stackSize = defaultStackSize, Time timeSlice = defaultT
 }
 
 Thread::~Thread(){ //pazi ovde
+    waitToComplete();
     delete myPCB;
 }
 

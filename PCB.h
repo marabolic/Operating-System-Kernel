@@ -4,9 +4,10 @@
 
 #include "Queue.h"
 #include "Thread.h"
+#include "KSemaphr.h"
+#include "Define.h"
 
-#define lock asm cli
-#define unlock asm sti
+
 
 class PCB {
 public:
@@ -17,12 +18,16 @@ public:
     unsigned *stack;
     StackSize stack_size;
     Time time_slice;
+
+    BOOL completed, started;
     
     static Queue queue;
     
-
+    KernelSem *sem;
+    
+    static ID id;
     ID threadId;
-    static PCB *running;
+    static PCB * volatile running;
     Thread *my_thread;
 
     PCB(Thread *myThread, StackSize stackSize = defaultStackSize, Time timeSlice = defaultTimeSlice);

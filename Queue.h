@@ -24,9 +24,7 @@ public:
 
     Queue();
     ~Queue();
-
-    void sort();
-
+    
     void insert(PCB *pcb);
     PCB * remove();
 
