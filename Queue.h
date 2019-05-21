@@ -12,10 +12,10 @@ class PCB;
 
 class Queue {
 
-private:
+public:
     struct Node{
         PCB *val;
-        Node *next = 0;
+        Node *next = NULL;
     };
 
     Node *first, *last;

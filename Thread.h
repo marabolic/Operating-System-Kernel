@@ -12,7 +12,7 @@ typedef unsigned int Time; //time, x 55ms
 const Time defaultTimeSlice = 2; // default = 2*55ms
 typedef int ID;
 
-class PCB; //Kernel's implementation od a user's thread
+class PCB; 
 
 class Thread{
 public:
