@@ -1,6 +1,7 @@
 
 #include "PCB.h"
-
+#include "Schedule.h"
+#include <dos.h>
 
 
 PCB::PCB(Thread *myThread, StackSize stackSize = defaultStackSize, Time timeSlice = defaultTimeSlice) {
@@ -14,9 +15,23 @@ PCB::PCB(Thread *myThread, StackSize stackSize = defaultStackSize, Time timeSlic
     started = FALSE;
 }
 
+
+void PCB::createProcess(PCB *newPCB){
+   stack = new unsigned[stack_size];
+   stack[stack_size-1] = 0x200;
+   stack[stack_size-2] = FP_SEG(my_thread);
+   stack[stack_size-3] = FP_OFF(my_thread);
+   newPCB->bp = newPCB->sp = FP_OFF(stack + stack_size - 12);
+   newPCB->ss = FP_SEG(stack + stack_size - 12);
+
+   status = READY;
+   newPCB->completed = 0;
+}
+
 void PCB::start() { 
     if (!started){
-        //...
+        createProcess(this);
+        Scheduler::put(this);
         started = TRUE;
     }
 }

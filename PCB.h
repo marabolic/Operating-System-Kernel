@@ -14,11 +14,12 @@ public:
     unsigned sp;
     unsigned ss;
     unsigned bp;
-    unsigned finished;
+    //unsigned finished;
     unsigned *stack;
     StackSize stack_size;
     Time time_slice;
 
+    STATUS status;
     BOOL completed, started;
     
     static Queue queue;
@@ -34,6 +35,8 @@ public:
     ~PCB();
     void start();
 	void waitToComplete();
+
+    void createProcess(PCB *newPCB);
 
     ID getId();
 	static ID getRunningId();
