@@ -49,11 +49,13 @@ ID PCB::getRunningId() {
 }
 
 Thread * PCB::getThreadById(ID id){
-    for (Queue::Node *temp = queue.first; temp != queue.last; temp = temp->next) {
-        if (temp->val->threadId == id){
-            return temp->val->my_thread;
-        }
+    
+    PCB *temp = Scheduler::get();
+    while (temp->my_thread->getId() != id){
+        Scheduler::put(temp);
+        temp = Scheduler::get();
     }
+    return temp->my_thread;
 }
 
  void PCB::wrapper() {

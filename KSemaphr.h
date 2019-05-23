@@ -6,13 +6,19 @@
 
 typedef unsigned int Time;
 
-class KernelSem{
+class KernelSem {
 
 public:
     int val;
+    int lck;
+    Queue blocked;
     KernelSem(int init = 1);
     virtual ~KernelSem();
 
+    void block();
+    void deblock();
+    
+    int value() const;
     virtual int wait(Time maxTimeToWait);
     virtual int signal(int n = 0);
     PCB *myPCB;

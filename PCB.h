@@ -22,8 +22,6 @@ public:
     STATUS status;
     BOOL completed, started;
     
-    static Queue queue;
-    
     KernelSem *sem;
     
     static ID id;
