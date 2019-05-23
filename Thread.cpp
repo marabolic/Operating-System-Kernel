@@ -1,13 +1,16 @@
+
 #include "PCB.h"
 #include "Thread.h"
 
-Thread::Thread(StackSize stackSize = defaultStackSize, Time timeSlice = defaultTimeSlice){
+class PCB;
+
+Thread::Thread(StackSize stackSize, Time timeSlice){
     myPCB = new PCB(this, stackSize, timeSlice);
 }
 
-Thread::~Thread(){ //pazi ovde
+Thread::~Thread(){
     waitToComplete();
-    delete myPCB;
+   delete myPCB;
 }
 
 void Thread::start(){
@@ -34,3 +37,6 @@ Thread * Thread::getThreadById(ID id){
 void dispatch() {
    PCB::dispatch();
 }
+
+
+

@@ -4,17 +4,19 @@
 
 #include "Queue.h"
 #include "Thread.h"
+#include "Semaphor.h"
 #include "KSemaphr.h"
 #include "Define.h"
 
 
+class KernelSem;
 
 class PCB {
 public:
     unsigned sp;
     unsigned ss;
     unsigned bp;
-    //unsigned finished;
+
     unsigned *stack;
     StackSize stack_size;
     Time time_slice;
@@ -26,7 +28,7 @@ public:
     
     static ID id;
     ID threadId;
-    static PCB * volatile running;
+    static PCB *volatile running;
     Thread *my_thread;
 
     PCB(Thread *myThread, StackSize stackSize = defaultStackSize, Time timeSlice = defaultTimeSlice);

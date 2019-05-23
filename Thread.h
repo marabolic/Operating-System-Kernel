@@ -1,6 +1,3 @@
-/*
- * Thread
- */
 
 #ifndef _thread_h_
 #define _thread_h_

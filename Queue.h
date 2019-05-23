@@ -15,7 +15,7 @@ class Queue {
 public:
     struct Node{
         PCB *val;
-        Node *next = NULL;
+        Node *next;
     };
 
     Node *first, *last;

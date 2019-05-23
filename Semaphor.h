@@ -1,9 +1,3 @@
-/*
- * Semaphor.h
- *
- *  Created on: May 11, 2019
- *      Author: OS1
- */
 
 #ifndef _semaphor_h_
 #define _semaphor_h_

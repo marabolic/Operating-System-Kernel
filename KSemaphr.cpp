@@ -1,13 +1,20 @@
-#include "KSemaphr.h"
-#include "Schedule.h"
-#include "Define.h"
 
-KernelSem::KernelSem(int init = 1){
+#include "KSemaphr.h"
+#include "SCHEDULE.h"
+#include "PCB.h"
+#include "Define.h"
+#include "Queue.h"
+
+
+
+KernelSem::KernelSem(int init){
     val = 0;
     lck = 0;
+    myPCB = NULL;
 }
 KernelSem::~KernelSem(){
     delete myPCB;
+	delete blocked;
 }
 
 int KernelSem::value() const {
@@ -16,33 +23,52 @@ int KernelSem::value() const {
 
 void KernelSem::block(){
     
-    blocked.insert(PCB::running);
+    blocked->insert(PCB::running);
     PCB::running=Scheduler::get();
     
 }
 
 void KernelSem::deblock(){
-    PCB *pcb = blocked.remove();
-    if (pcb!=NULL){
-        pcb->status = READY;
+   PCB *pcb = blocked->remove();
+   if (pcb!=NULL){
+       pcb->status = READY;
         Scheduler::put(pcb);
     }
 }
 
 int KernelSem::wait(Time maxTimeToWait){
-    lock();
+	#ifndef BCC_BLOCK_IGNORE
+	asm cli;
+	#endif
 
     if (--val < 0){
         block();
     }
 
-    unlock();
+	#ifndef BCC_BLOCK_IGNORE
+	asm sti;
+	#endif
+    return val;
 }
-int KernelSem::signal(int n = 0){
-    lock();
+
+
+int KernelSem::signal(int n){
+
+	#ifndef BCC_BLOCK_IGNORE
+	asm cli;
+	#endif
+
     if (val++ > 0){
         deblock();
+        
     }
     
-    unlock();
+	#ifndef BCC_BLOCK_IGNORE
+	asm sti;
+	#endif
+    return val;
 }
+
+
+
+

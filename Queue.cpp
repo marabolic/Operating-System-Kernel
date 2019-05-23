@@ -1,3 +1,4 @@
+
 #include "Queue.h"
 
 
@@ -7,9 +8,21 @@
  }
  
 
+ Queue::~Queue(){
+	 len = 0;
+	 Node *t = first;
+	 while(t != NULL){
+	 	t = first;
+	 	first = first->next;
+	 	delete t;
+	 }
+	 first = last = NULL;
+ }
+
 void Queue::insert(PCB *pcb){
     Node *n = new Node();
     n->val = pcb;
+    n->next = NULL;
     if (first == NULL){
         first = n;
     }
@@ -33,4 +46,5 @@ PCB * Queue::remove(){
 int Queue::size() const{
     return len;
 }
+
 
