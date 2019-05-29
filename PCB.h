@@ -44,7 +44,7 @@ public:
     void start();
 	void waitToComplete();
 
-	void idleFun();
+	static void idleFun();
 	void initIdle();
 
     void createProcess();
@@ -55,7 +55,7 @@ public:
 	static Thread * getThreadById(ID id);
 
     static void dispatch();
-    void wrapper();
+    static void wrapper();
 };
 
 #endif

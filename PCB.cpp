@@ -39,8 +39,8 @@ void PCB::createProcess(){
    stack = new unsigned[stack_size];
    stack[stack_size-1] = 0x200;
 	#ifndef BCC_BLOCK_IGNORE
-   stack[stack_size-2] = FP_SEG(&wrapper);
-   stack[stack_size-3] = FP_OFF(&wrapper);
+  stack[stack_size-2] = FP_SEG(PCB::wrapper);
+   stack[stack_size-3] = FP_OFF(PCB::wrapper);
    bp = sp = FP_OFF(stack + stack_size - 12);
    ss = FP_SEG(stack + stack_size - 12);
 	#endif
@@ -93,8 +93,8 @@ void PCB::initIdle(){
 	stack = new unsigned[stack_size];
     stack[stack_size-1] = 0x200;
 	#ifndef BCC_BLOCK_IGNORE
-		stack[stack_size-2] = FP_SEG(&idleFun);
-		stack[stack_size-3] = FP_OFF(&idleFun);
+		stack[stack_size-2] = FP_SEG(PCB::idleFun);
+		stack[stack_size-3] = FP_OFF(PCB::idleFun);
 		bp = sp = FP_OFF(stack + stack_size - 12);
 		ss = FP_SEG(stack + stack_size - 12);
 	#endif
