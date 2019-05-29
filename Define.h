@@ -14,7 +14,7 @@ typedef unsigned BOOL;
 
 
 
-enum STATUS{READY, DONE, BLOCKED, SLEEP, CREATED};
+enum STATUS{READY, DONE, BLOCKED, SLEEP, CREATED, IDLE};
 enum{FALSE = 0, TRUE = 1};
 
 #endif

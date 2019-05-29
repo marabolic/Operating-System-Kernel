@@ -1,6 +1,12 @@
 
+/*
+ * ponovo.cpp
+ *
+ *  Created on: May 23, 2019
+ *      Author: OS1
+ */
 
-
+/*
 
 //pretpostavljeni memorijski model: huge
 
@@ -41,21 +47,20 @@ PCB1* getNextPCBToExecute(){
 }
 
 
-
 unsigned tsp;
 unsigned tss;
 
 volatile int brojac = 20;
 volatile int zahtevana_promena_konteksta = 0;
 
-void interrupt timer(){
+void interrupt timer1(){
 	if (!zahtevana_promena_konteksta) brojac--;
 	if (brojac == 0 || zahtevana_promena_konteksta) {
 
-		#ifndef BCC_BLOCK_IGNORE
+
 		if (lockFlag){
 			zahtevana_promena_konteksta = 0;
-
+			#ifndef BCC_BLOCK_IGNORE
 			asm {
 				mov tsp, sp
 				mov tss, ss
@@ -107,7 +112,7 @@ void dispatch1(){
 	asm cli;
 	#endif
 	zahtevana_promena_konteksta = 1;
-	timer();
+	timer1();
 	#ifndef BCC_BLOCK_IGNORE
 	asm sti;
 	#endif
@@ -132,8 +137,8 @@ void inic(){
 		mov ax, word ptr es:0020h
 		mov word ptr oldTimerOFF, ax
 
-		mov word ptr es:0022h, seg timer
-		mov word ptr es:0020h, offset timer
+		mov word ptr es:0022h, seg timer1
+		mov word ptr es:0020h, offset timer1
 		mov ax, oldTimerSEG
 		mov word ptr es:0182h, ax
 		mov ax, oldTimerOFF
@@ -205,10 +210,10 @@ void b(){
 }
 
 
-void createProcess(PCB1 *newPCB, void (*body)()){
+/*void createProcess(PCB1 *newPCB, void (*body)()){
 	unsigned* st1 = new unsigned[1024];
 
-	st1[1023] =0x200;
+	st1[1023] = 0x200;
 
 #ifndef BCC_BLOCK_IGNORE
 	st1[1022] = FP_SEG(body);
@@ -226,12 +231,12 @@ newPCB->sp = FP_OFF(st1+1012);
 void doSomething(){
 	lockFlag=0;
 	p[1] = new PCB1();
-	createProcess(p[1],a);
+	//createProcess(p[1],a);
 	cout<<"napravio a"<<endl;
 	p[1]->kvant = 40;
 
 	p[2] = new PCB1();
-	createProcess(p[2],b);
+	//createProcess(p[2],b);
 	cout<<"napravio b"<<endl;
 	p[2]->kvant = 20;
 
@@ -253,7 +258,7 @@ void doSomething(){
 	cout<<"Happy End"<<endl;
 }
 
-
+*/
 
 /*
 
