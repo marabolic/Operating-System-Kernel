@@ -6,8 +6,14 @@
 #include "Thread.h"
 #include "Semaphor.h"
 #include "KSemaphr.h"
+#include "ThrdList.h"
 #include "Define.h"
 #include <dos.h>
+#include "SCHEDULE.h"
+#include <stdio.h>
+#include <assert.h>
+#include "SemList.h"
+#include "ThrdList.h"
 
 class KernelSem;
 
@@ -18,16 +24,20 @@ public:
     unsigned bp;
 
 
-
-
     unsigned *stack;
     StackSize stack_size;
     Time time_slice;
 
     STATUS status;
-    BOOL completed, started;
+    //BOOL completed, started;
+   // BOOL lockFlag;
+
+    BOOL signalFlag;
     
-    BOOL lockFlag;
+    static volatile int timerFlag;
+
+    static SemList klist;
+    static ThreadList tlist;
 
     KernelSem *sem;
     
@@ -35,6 +45,8 @@ public:
     ID threadId;
     static PCB *volatile running;
     static PCB *volatile idle;
+    static PCB *main;
+    static Thread * mainThread;
 
     Time timeLeft;
     Thread *my_thread;
@@ -45,7 +57,7 @@ public:
 	void waitToComplete();
 
 	static void idleFun();
-	void initIdle();
+	static void initIdle();
 
     void createProcess();
     //PCB * volatile  idle();
@@ -57,5 +69,9 @@ public:
     static void dispatch();
     static void wrapper();
 };
+
+
+void initTimer();
+void restoreTimer();
 
 #endif

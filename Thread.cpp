@@ -9,7 +9,7 @@ Thread::Thread(StackSize stackSize, Time timeSlice){
 }
 
 Thread::~Thread(){
-    waitToComplete();
+   waitToComplete();
    delete myPCB;
 }
 

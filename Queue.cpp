@@ -21,7 +21,7 @@
 
 void Queue::insert(PCB *pcb){
     Node *n = new Node();
-    n->val = pcb;
+    n->pcb = pcb;
     n->next = NULL;
     if (first == NULL){
         first = n;
@@ -32,10 +32,10 @@ void Queue::insert(PCB *pcb){
 }
 
 PCB * Queue::remove(){
-    if (len == NULL){
+    if (len == 0){
         return NULL;
     }
-    PCB * pcb = first->val;
+    PCB * pcb = first->pcb;
     Node *prev = first;
     first = first->next;
     delete prev;

@@ -1,72 +1,82 @@
 
 #include "KSemaphr.h"
-#include "SCHEDULE.h"
-#include "PCB.h"
-#include "Define.h"
-#include "Queue.h"
+#include "SemList.h"
 
-
+extern int syncPrintf(const char *format, ...);
+extern void lock();
+extern void unlock();
 
 KernelSem::KernelSem(int init){
-    val = 0;
-    lck = 0;
-    myPCB = NULL;
+	PCB::klist.add(this);
+    value = init;
+    blocked = new SleepQueue();
 }
+
 KernelSem::~KernelSem(){
-    delete myPCB;
+
+	PCB::klist.remove(this); //const mozda
+	assert(blocked->size()==0);
 	delete blocked;
 }
 
-int KernelSem::value() const {
-    return val;
+int KernelSem::val() const {
+    return value;
 }
 
-void KernelSem::block(){
-    
-    blocked->insert(PCB::running);
-    PCB::running=Scheduler::get();
-    
+void KernelSem::block(Time time) {
+	PCB::running->status = BLOCKED;
+    blocked->insert(PCB::running, time);
+    unlock();
+    dispatch();
+    lock();
+
 }
 
 void KernelSem::deblock(){
+
    PCB *pcb = blocked->remove();
-   if (pcb!=NULL){
+   if (pcb!=NULL) {
        pcb->status = READY;
-        Scheduler::put(pcb);
+       pcb->signalFlag = 1;
+       Scheduler::put(pcb);
     }
 }
 
 int KernelSem::wait(Time maxTimeToWait){
-	#ifndef BCC_BLOCK_IGNORE
-	asm cli;
-	#endif
-
-    if (--val < 0){
-        block();
-    }
-
-	#ifndef BCC_BLOCK_IGNORE
-	asm sti;
-	#endif
-    return val;
+	lock();
+	PCB::running->signalFlag = 1;
+	if (--value < 0){
+		 block(maxTimeToWait);
+	}
+	unlock();
+	return PCB::running->signalFlag;
 }
 
 
 int KernelSem::signal(int n){
 
-	#ifndef BCC_BLOCK_IGNORE
-	asm cli;
-	#endif
-
-    if (val++ > 0){
-        deblock();
-        
-    }
-    
-	#ifndef BCC_BLOCK_IGNORE
-	asm sti;
-	#endif
-    return val;
+	lock();
+	if (n == 0){
+		if (value++ < 0){
+			deblock();
+		}
+		unlock();
+		return 0;
+	}
+	if (n > 0){
+		int i = 0;
+		if (value < 0){
+			while(i < n && blocked->size() > 0){
+				deblock();
+				i++;
+			}
+		}
+		value += n;
+		unlock();
+		return i;
+	}
+	unlock();
+    return n;
 }
 
 

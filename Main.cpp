@@ -1,5 +1,3 @@
-
-
 #include <iostream.h>
 #include "PCB.h"
 #include <dos.h>
@@ -20,38 +18,39 @@ int main(int argc, char* argv[]){
 
 	return result;
 
+}
 
+
+volatile BOOL lockFlag = 0;
+
+void lock(){
+	assert(lockFlag==0);
+	lockFlag = 1;
+}
+
+void unlock(){
+	assert(lockFlag==1);
+	lockFlag = 0;
 }
 
 
 void init(){
-
-	#ifndef BCC_BLOCK_IGNORE
-	asm cli;
-	#endif
-
-	PCB::running = new PCB(NULL, 0,0);
-	PCB::idle->initIdle();
-
-
-	#ifndef BCC_BLOCK_IGNORE
-	asm sti;
-	#endif
+	//PCB::mainThread = new Thread(0,0);
+	PCB::main = new PCB(NULL,0,0);
+	PCB::main->status = READY;
+	PCB::running = PCB::main;
+	PCB::initIdle();
+	initTimer();
 }
 
 
 void restore(){
-	#ifndef BCC_BLOCK_IGNORE
-	asm cli;
-	#endif
-
 
 	delete PCB::idle;
 	delete PCB::running;
-
-	#ifndef BCC_BLOCK_IGNORE
-	asm sti;
-	#endif
+	restoreTimer();
 
 }
+
+
 

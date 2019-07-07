@@ -8,7 +8,8 @@
 #ifndef _event_h_
 #define _event_h_
 
-typedef unsigned char IVTNo;
+#include "PrepEnt.h"
+
 class KernelEv;
 
 class Event {

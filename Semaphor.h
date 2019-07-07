@@ -13,6 +13,7 @@ public:
 
 	virtual int wait(Time maxTimeToWait);
 	virtual int signal(int n=0);
+	int val () const; // Returns the current value of the semaphore
 private:
 	KernelSem* myImpl;
 };

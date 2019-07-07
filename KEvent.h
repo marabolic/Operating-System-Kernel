@@ -3,17 +3,20 @@
 #ifndef _kevent_h_
 #define _kevent_h_
 
+#include  "KSemaphr.h"
+
 typedef unsigned char IVTNo;
 class KernelEv{
 public:
+	PCB * owner;
+	KernelSem * sem;
+	IVTNo ivtNo;
 
-KernelEv(IVTNo ivtNo);
-~KernelEv();
-void wait();
+	KernelEv(IVTNo ivtNo);
+	~KernelEv();
+	void wait();
 
-
-friend class KernelEv;
-void signal(); //can call KernelEv
+	void signal();
 };
 
 #endif //
