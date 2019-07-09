@@ -99,6 +99,7 @@ void Consumer::consume(char p) {
 
 void Consumer::run () {
 		
+
 	int i = 0;
 	while(!theEnd) {
 		char d = myBuffer->take();
@@ -112,7 +113,6 @@ void Consumer::run () {
 	intLock
 	cout<<endl<<"ESC pressed - empty the buffer!"<<endl;
 	intUnlock
-	
 	while (myBuffer->fullCount()){
 		char d = myBuffer->take();
 		consume(d);
@@ -200,12 +200,14 @@ int userMain (int argc, char* argv[])
 	}
 #endif
 
+
 	for (i=0; i<N; i++){
 		delete pro[i];
 	}  
 	delete [] pro;
 	delete kev;
 	delete con;
+
 	delete buff;
 
 	intLock

@@ -9,10 +9,12 @@
 #include "ThrdList.h"
 #include "Define.h"
 #include <dos.h>
+#include "SigHLst.h"
 #include "SCHEDULE.h"
 #include <stdio.h>
 #include <assert.h>
 #include "SemList.h"
+#include "SigList.h"
 #include "ThrdList.h"
 
 class KernelSem;
@@ -39,6 +41,13 @@ public:
     static SemList klist;
     static ThreadList tlist;
 
+    SignalList *slist;
+    SignalHList *handlerList[16];
+
+    int flagMaskLocal[16];
+    static int flagMaskGlobal[16];
+
+
     KernelSem *sem;
     
     static ID id;
@@ -50,6 +59,8 @@ public:
 
     Time timeLeft;
     Thread *my_thread;
+
+    PCB * parent;
 
     PCB(Thread *myThread, StackSize stackSize = defaultStackSize, Time timeSlice = defaultTimeSlice);
     ~PCB();
@@ -66,8 +77,22 @@ public:
 	static ID getRunningId();
 	static Thread * getThreadById(ID id);
 
+	void processSignals();
+	static void signalZero();
+
+	void signal(SignalId signal);
+	void registerHandler(SignalId signal, SignalHandler handler);
+	void unregisterAllHandlers(SignalId id);
+	void swap(SignalId id, SignalHandler hand1, SignalHandler hand2);
+	void blockSignal(SignalId signal);
+	static void blockSignalGlobally(SignalId signal);
+	void unblockSignal(SignalId signal);
+	static void unblockSignalGlobally(SignalId signal);
+
     static void dispatch();
     static void wrapper();
+
+
 };
 
 

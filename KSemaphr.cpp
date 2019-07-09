@@ -3,20 +3,20 @@
 #include "SemList.h"
 
 extern int syncPrintf(const char *format, ...);
-extern void lock();
-extern void unlock();
 
-KernelSem::KernelSem(int init){
-	PCB::klist.add(this);
+extern volatile BOOL lockFlag;
+
+KernelSem::KernelSem(int init) {
     value = init;
     blocked = new SleepQueue();
+    PCB::klist.add(this);
 }
 
-KernelSem::~KernelSem(){
-
+KernelSem::~KernelSem() {
 	PCB::klist.remove(this); //const mozda
 	assert(blocked->size()==0);
 	delete blocked;
+
 }
 
 int KernelSem::val() const {
@@ -33,7 +33,6 @@ void KernelSem::block(Time time) {
 }
 
 void KernelSem::deblock(){
-
    PCB *pcb = blocked->remove();
    if (pcb!=NULL) {
        pcb->status = READY;

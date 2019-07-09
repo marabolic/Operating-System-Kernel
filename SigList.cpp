@@ -1,24 +1,19 @@
 /*
- * ThreadList.cpp
+ * SigList.cpp
  *
- *  Created on: Jul 7, 2019
+ *  Created on: Jul 8, 2019
  *      Author: OS1
  */
 
 
-
-
-#include "ThrdList.h"
-#include "PCB.h"
+#include "SigList.h"
 #include "Define.h"
 
-extern volatile BOOL lockFlag;
 
-ThreadList::ThreadList(){
+SignalList::SignalList(){
 	first = last = NULL;
 }
-
-ThreadList::~ThreadList(){
+SignalList::~SignalList(){
 	 Node *t = first;
 	 while(first != NULL){
 		t = first;
@@ -28,9 +23,9 @@ ThreadList::~ThreadList(){
 	 first = last = NULL;
 }
 
-void ThreadList::add(PCB *Thread){
+void SignalList::add(SignalId id){
 	Node *n = new Node();
-	n->thread = Thread;
+	n->id = id;
 	n->next = NULL;
 	if (first == NULL){
 		first = n;
@@ -39,9 +34,9 @@ void ThreadList::add(PCB *Thread){
 	last = n;
 }
 
-void ThreadList::remove(PCB * Thread){
+void SignalList::remove(SignalId id){
 	Node * temp = first, *prev = NULL;
-	while (temp && temp->thread != Thread) {
+	while (temp && temp->id != id) {
 		prev = temp;
 		temp = temp->next;
 	}
@@ -61,27 +56,17 @@ void ThreadList::remove(PCB * Thread){
 		first = temp;
 		delete old;
 	}
-
 }
 
-PCB * ThreadList::getPCB(int id){
-	lock();
-	Node * temp = first;
-	while (temp){
-		if (temp->thread->getId() == id){
-			unlock();
-			return temp->thread;
-		}
-	temp = temp->next;
-	}
-	unlock();
-	return NULL;
+void SignalList::removeAll(){
+	 Node *t = first;
+	 while(first != NULL){
+		t = first;
+		first = first->next;
+		delete t;
+	 }
+	 first = last = NULL;
 }
-
-
-
-
-
 
 
 

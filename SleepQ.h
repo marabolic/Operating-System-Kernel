@@ -12,6 +12,7 @@ public:
 		PCB * pcb;
 		Time sleepTime;
 		Node * next;
+		~Node(){next=NULL;}
 	};
 
 	Node *first, *last;

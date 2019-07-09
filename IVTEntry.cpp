@@ -1,8 +1,9 @@
 
 
 #include "IVTEntry.h"
+#include "Define.h"
 
-
+extern volatile BOOL lockFlag;
 class KernelEv;
 KernelEv * evArr[256];
 
@@ -18,7 +19,6 @@ IVTEntry::~IVTEntry(){
     #ifndef BCC_BLOCK_IGNORE
 	setvect(ivtNo, oldInt);
 	#endif
-
 	//callold
 }
 

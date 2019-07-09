@@ -22,16 +22,42 @@ int main(int argc, char* argv[]){
 
 
 volatile BOOL lockFlag = 0;
+volatile int flags;
 
-void lock(){
-	assert(lockFlag==0);
-	lockFlag = 1;
+/*
+
+void lock() {
+  if (lockFlag)
+    return;
+
+ lockFlag = 1;
+ int _flags;
+
+#ifndef BCC_BLOCK_IGNORE
+  asm pushf;
+  asm pop _flags;
+  asm cli;
+
+#endif
+  flags = _flags;
 }
 
-void unlock(){
-	assert(lockFlag==1);
-	lockFlag = 0;
+
+
+void unlock() {
+  if(!lockFlag)
+    return;
+
+  int _flags = flags;
+
+#ifndef BCC_BLOCK_IGNORE
+  asm push _flags;
+  asm popf;
+
+#endif
+  lockFlag = 0;
 }
+*/
 
 
 void init(){
@@ -45,11 +71,9 @@ void init(){
 
 
 void restore(){
-
 	delete PCB::idle;
 	delete PCB::running;
 	restoreTimer();
-
 }
 
 

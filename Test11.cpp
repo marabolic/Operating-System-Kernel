@@ -5,7 +5,8 @@
 #include "KSemaphr.h"
 
 extern int syncPrintf (const char* format, ... );
-
+extern void lock();
+extern void unlock();
  //	 Test: Semafori sa spavanjem 3
 
 
@@ -35,6 +36,7 @@ void TestThread::run()
 {
 	syncPrintf("Thread %d waits for %d units of time.\n",getId(),waitTime);
 	int r = s.wait(waitTime);
+	assert(0);
 	s.signal();
 	syncPrintf("Thread %d finished: r = %d\n", getId(),r);
 }
@@ -42,7 +44,7 @@ void TestThread::run()
 void tick()
 {
 
-	//t++;
+	t++;
 	//if(t)
 		//syncPrintf("%d\n",t);
 
@@ -64,10 +66,11 @@ public:
 		for (long i = 0; i < 100000; i++)
 		{
 			if (mutex->wait(n)) {
-				cout << znak;
+				lock();
+				cout << znak << flush;
+				unlock();
 				mutex->signal();
 			}
-
 		}
 
 		if (mutex->wait(n)) {
@@ -97,7 +100,6 @@ int userMain(int argc, char* argv[]) {
 	delete a;
 	delete b;
 	delete c;
-
 	if (mutex->wait(1)) {
 		cout << endl << "userMain finished" << endl;
 		mutex->signal();
@@ -109,7 +111,7 @@ int userMain(int argc, char* argv[]) {
 
 	return 0;
 }
-
-
-
 */
+
+
+

@@ -2,16 +2,30 @@
 
 #ifndef _define_h_
 #define _define_h_
-
 #include <assert.h>
 #define regSP = _SP
 #define regSS = _SS
 #define	regBP = _BP
 #define NULL 0
 
+
 typedef unsigned BOOL;
 
+
 typedef void interrupt(*interruptFun)(...);
+
+
+
+
+#define lock() {\
+		lockFlag++;\
+	}
+
+
+#define unlock(){\
+	lockFlag--;\
+	assert(lockFlag>=0);\
+}
 
 
 enum STATUS{READY, DONE, BLOCKED, SLEEP, CREATED, IDLE};

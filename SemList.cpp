@@ -1,6 +1,7 @@
 #include "SemList.h"
 #include "KSemaphr.h"
 
+
 SemList::SemList(){
 	first = last = NULL;
 }
@@ -32,7 +33,9 @@ void SemList::remove(KernelSem * sem){
 		prev = temp;
 		temp = temp->next;
 	}
-	if (temp == NULL) return;
+	if (temp == NULL){
+		return;
+	}
 
 	if (temp == last)
 			last = prev;
@@ -48,13 +51,14 @@ void SemList::remove(KernelSem * sem){
 		first = temp;
 		delete old;
 	}
-
 }
 
 void SemList::decrementTime(){
 	Node * temp = first;
 	while (temp){
+
 		temp->sem->blocked->decTime();
+
 		temp = temp->next;
 	}
 }

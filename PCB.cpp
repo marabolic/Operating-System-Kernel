@@ -5,8 +5,7 @@
 
 extern int syncPrintf(const char *format, ...);
 extern void tick();
-extern void lock();
-extern void unlock();
+
 extern volatile BOOL lockFlag;
 
 void interrupt timer(...);
@@ -17,10 +16,15 @@ PCB * volatile PCB::idle = NULL;
 PCB * PCB::main = NULL;
 Thread * PCB::mainThread = NULL;
 
+
 void interrupt (*oldTimer)(...);
 SemList PCB::klist;
 ThreadList PCB::tlist;
 
+
+
+
+int PCB::flagMaskGlobal[16];
 
 unsigned tsp;
 unsigned tss;
@@ -29,33 +33,70 @@ unsigned tbp;
 volatile int PCB::timerFlag = 1;
 
 PCB::PCB(Thread *myThread, StackSize stackSize, Time timeSlice) {
+
     threadId = ++id;
     my_thread = myThread;
     stack_size = stackSize;
     time_slice = timeSlice;
     stack = NULL;
+
+    if (this != main)
+    	parent = this;
+    else parent = NULL;
+
     sem = new KernelSem(0);
+    slist = new SignalList();
     status = CREATED;
+    /*
+    if (parent != NULL){
+    	lock();
+		for (int i = 0; i < 16; i ++)
+			flagMaskLocal[i] = parent->flagMaskLocal[i];
+	    for (int j = 0; j < 16; j++){
+	    	handlerList[j] = new SignalHList();
+	    	 SignalHList::Node * temp = parent->handlerList[j]->first;
+	    		 while (temp) {
+	    			 handlerList[j]->add(temp->handler);
+	    			 temp = temp->next;
+	    		 }
+	    }
+	    unlock();
+    }
+    else{*/
+    	for (int i = 0; i < 16; i ++)
+    		flagMaskLocal[i] = 0;
+
+        //for (int j = 0; j < 16; j++)
+        	//handlerList[j] = new SignalHList();
+   // }
+
     tlist.add(this);
+    //handlerList[0]->add(PCB::signalZero);
+
 }
 
 
 PCB::~PCB() {
+
 	tlist.remove(this);
 	delete sem;
 	delete []stack;
+	parent = NULL;
+	//for (int j = 0; j < 16; j++)
+		//delete handlerList[j];
+	//delete slist;
+
 }
 
 
 void PCB::createProcess(){
-
-   stack = new unsigned[stack_size/sizeof(unsigned)];
-   stack[stack_size-1] = 0x200;
+	stack = new unsigned[stack_size/sizeof(unsigned)];
+	stack[stack_size-1] = 0x200;
 	#ifndef BCC_BLOCK_IGNORE
-   stack[stack_size-2] = FP_SEG(PCB::wrapper);
-   stack[stack_size-3] = FP_OFF(PCB::wrapper);
-   bp = sp = FP_OFF(stack + stack_size - 12);
-   ss = FP_SEG(stack + stack_size - 12);
+	stack[stack_size-2] = FP_SEG(PCB::wrapper);
+	stack[stack_size-3] = FP_OFF(PCB::wrapper);
+	bp = sp = FP_OFF(stack + stack_size - 12);
+	ss = FP_SEG(stack + stack_size - 12);
 	#endif
 }
 
@@ -90,23 +131,31 @@ Thread * PCB::getThreadById(ID id){
 void PCB::idleFun(){
 
 	while(1){
+		//for (int i = 0; i < 33000;i++);
+		//lock();
+		//cout << "idle " << flush;
 		//syncPrintf("idle ");
+		//unlock();
 	}
 }
 
 
  void PCB::wrapper() {
      PCB::running->my_thread->run();
+     lock();
      if (PCB::running->sem->val() < 0)
     	 PCB::running->sem->signal(-PCB::running->sem->val());
+     //PCB::running->slist->add(2);
+     //PCB::running->processSignals();
      PCB::running->status = DONE;
+    // if ( PCB::running->parent != NULL)
+    // PCB::running->slist->add(1);
+     unlock();
      dispatch();
      assert(0);
  }
 
 void PCB::initIdle(){
-
-
 	idle = new PCB(NULL,128,1);
 	idle->stack = new unsigned[idle->stack_size];
     idle->stack[idle->stack_size-1] = 0x200;
@@ -122,12 +171,12 @@ void PCB::initIdle(){
 
 
 
-
 void restoreTimer(){
 #ifndef BCC_BLOCK_IGNORE
 	setvect(0x08, oldTimer);
 #endif
 }
+
 
 //TIMER
  void interrupt timer(...) {
@@ -185,6 +234,9 @@ void restoreTimer(){
 	}
 
 	PCB::timerFlag = 1;
+	//lock();
+	//PCB::running->processSignals();
+	//unlock();
  }
 
  void initTimer(){
@@ -194,11 +246,75 @@ void restoreTimer(){
  #endif
  }
 
+ void PCB::processSignals(){
+	 SignalList::Node * temp = slist->first;
+	 while (temp) {
+		 if (flagMaskLocal[temp->id] == 0 && flagMaskGlobal[temp->id] == 0) {
+			 handlerList[temp->id]->processHandlers();
+			 slist->remove(temp->id);
+		 }
+		 temp = temp->next;
+	 }
+ }
+
+ void PCB::signalZero(){
+	 if (running->parent != NULL)
+	 if (running->sem->val() < 0)
+		 running->sem->signal(-running->sem->val());
+	 running->slist->add(2);
+	 running->processSignals();
+	 running->status = DONE;
+	 running->slist->add(1);
+ }
+
+ void PCB::signal(SignalId signal){
+	 if (signal == 0){
+
+	 }
+	 if (signal == 1 || signal == 2 || signal > 15) return;
+	 slist->add(signal);
+ }
+
+ void PCB::registerHandler(SignalId signal, SignalHandler handler){
+	 if (signal == 0 || signal > 15) return;
+	 handlerList[signal]->add(handler);
+ }
+
+ void PCB::unregisterAllHandlers(SignalId id){
+	 handlerList[id]->removeAll();
+ }
+
+ void PCB::swap(SignalId id, SignalHandler hand1, SignalHandler hand2){
+	 if (id == 0 || id > 15) return;
+	 handlerList[id]->swap(hand1, hand2);
+ }
+
+ void PCB::blockSignal(SignalId signal){
+	 flagMaskLocal[signal] = 1;
+ }
+
+ void PCB::blockSignalGlobally(SignalId signal){
+	 flagMaskGlobal[signal] = 1;
+ }
+
+ void PCB::unblockSignal(SignalId signal){
+	 flagMaskLocal[signal] = 0;
+ }
+
+ void PCB::unblockSignalGlobally(SignalId signal){
+	 flagMaskGlobal[signal] = 0;
+ }
 
  void PCB::dispatch(){
 
+#ifndef BCC_BLOCK_IGNORE
+asm cli;
+#endif
  	PCB::timerFlag = 0;
  	timer();
+#ifndef BCC_BLOCK_IGNORE
+asm sti;
+#endif
 
   }
 

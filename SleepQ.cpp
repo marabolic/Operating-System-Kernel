@@ -6,6 +6,7 @@
  */
 
 #include "SleepQ.h"
+
 extern int syncPrintf (const char* format, ... );
 
 SleepQueue::SleepQueue(){
@@ -47,8 +48,8 @@ void SleepQueue::insert(PCB * pcb, Time time){
 
 
 PCB * SleepQueue::remove(){
+
 	if (len <= 0){
-		//assert(0);
 		return NULL;
 	}
 	PCB * pcb = first->pcb;
@@ -59,6 +60,7 @@ PCB * SleepQueue::remove(){
 		last = NULL;
 	len--;
 	//syncPrintf("len remove: %d \n", len);
+
 	return pcb;
 }
 
