@@ -40,8 +40,8 @@ PCB::PCB(Thread *myThread, StackSize stackSize, Time timeSlice) {
     time_slice = timeSlice;
     stack = NULL;
 
-    if (this != main)
-    	parent = this;
+    if (running != main)
+    	parent = running;
     else parent = NULL;
 
     sem = new KernelSem(0);
@@ -77,7 +77,7 @@ PCB::PCB(Thread *myThread, StackSize stackSize, Time timeSlice) {
 
 
 PCB::~PCB() {
-
+	lock();
 	tlist.remove(this);
 	delete sem;
 	delete []stack;
@@ -85,11 +85,12 @@ PCB::~PCB() {
 	//for (int j = 0; j < 16; j++)
 		//delete handlerList[j];
 	//delete slist;
-
+	unlock();
 }
 
 
 void PCB::createProcess(){
+	lock();
 	stack = new unsigned[stack_size/sizeof(unsigned)];
 	stack[stack_size-1] = 0x200;
 	#ifndef BCC_BLOCK_IGNORE
@@ -98,6 +99,7 @@ void PCB::createProcess(){
 	bp = sp = FP_OFF(stack + stack_size - 12);
 	ss = FP_SEG(stack + stack_size - 12);
 	#endif
+	unlock();
 }
 
 void PCB::start() {
@@ -131,14 +133,19 @@ Thread * PCB::getThreadById(ID id){
 void PCB::idleFun(){
 
 	while(1){
-		//for (int i = 0; i < 33000;i++);
-		//lock();
-		//cout << "idle " << flush;
-		//syncPrintf("idle ");
-		//unlock();
+
+		for (int i = 0; i < 30000; i++) {
+			for (int j = 0; j < 30000; j++);
+		}
+
+		lock();
+		//cout << "idle\n";
+		cout << flush;
+		unlock();
 	}
 }
 
+int context_switch_req = 0;
 
  void PCB::wrapper() {
      PCB::running->my_thread->run();
@@ -147,6 +154,7 @@ void PCB::idleFun(){
     	 PCB::running->sem->signal(-PCB::running->sem->val());
      //PCB::running->slist->add(2);
      //PCB::running->processSignals();
+     cout << flush;
      PCB::running->status = DONE;
     // if ( PCB::running->parent != NULL)
     // PCB::running->slist->add(1);
@@ -156,7 +164,8 @@ void PCB::idleFun(){
  }
 
 void PCB::initIdle(){
-	idle = new PCB(NULL,128,1);
+	lock();
+	idle = new PCB(NULL,1024,1);
 	idle->stack = new unsigned[idle->stack_size];
     idle->stack[idle->stack_size-1] = 0x200;
 	#ifndef BCC_BLOCK_IGNORE
@@ -166,6 +175,7 @@ void PCB::initIdle(){
 		idle->ss = FP_SEG(idle->stack + idle->stack_size - 12);
 	#endif
 	idle->status = IDLE;
+	unlock();
 }
 
 
@@ -194,7 +204,7 @@ void restoreTimer(){
 
 	 }
 
-	 if(PCB::running->timeLeft <= 0 || PCB::timerFlag == 0){
+	 if(PCB::running->timeLeft <= 0 || PCB::timerFlag == 0 || context_switch_req){
 		 if (!lockFlag) {
 
 			#ifndef BCC_BLOCK_IGNORE
@@ -229,11 +239,15 @@ void restoreTimer(){
 			_BP = tbp;
 			#endif
 		 }
+		 else {
+			 context_switch_req = 1;
+		 }
 
 		PCB::running->timeLeft = PCB::running->time_slice;
 	}
 
 	PCB::timerFlag = 1;
+	context_switch_req = 0;
 	//lock();
 	//PCB::running->processSignals();
 	//unlock();
@@ -308,12 +322,12 @@ void restoreTimer(){
  void PCB::dispatch(){
 
 #ifndef BCC_BLOCK_IGNORE
-asm cli;
+//asm cli;
 #endif
  	PCB::timerFlag = 0;
  	timer();
 #ifndef BCC_BLOCK_IGNORE
-asm sti;
+//asm sti;
 #endif
 
   }

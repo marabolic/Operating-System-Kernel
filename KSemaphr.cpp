@@ -13,9 +13,11 @@ KernelSem::KernelSem(int init) {
 }
 
 KernelSem::~KernelSem() {
+	lock();
 	PCB::klist.remove(this); //const mozda
 	assert(blocked->size()==0);
 	delete blocked;
+	unlock();
 
 }
 

@@ -17,14 +17,19 @@ IVTEntry::IVTEntry(IVTNo ivtNo, interruptFun newInt):ivtNo(ivtNo){
 
 IVTEntry::~IVTEntry(){
     #ifndef BCC_BLOCK_IGNORE
+	asm cli;
 	setvect(ivtNo, oldInt);
+	asm sti;
 	#endif
 	//callold
 }
 
-void IVTEntry::signal(){
+void IVTEntry::signal() {
+
 	if(evArr[ivtNo] != NULL)
 		evArr[ivtNo]->signal();
+
+
 }
 void IVTEntry::callOld(){
 	(*oldInt)();

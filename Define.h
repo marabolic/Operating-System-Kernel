@@ -21,10 +21,8 @@ typedef void interrupt(*interruptFun)(...);
 		lockFlag++;\
 	}
 
-
 #define unlock(){\
 	lockFlag--;\
-	assert(lockFlag>=0);\
 }
 
 

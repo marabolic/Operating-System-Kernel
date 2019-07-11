@@ -14,13 +14,13 @@ typedef unsigned char IVTNo;
 #define PREPAREENTRY(ivtNo, old)\
 	void interrupt interruptEvent##ivtNo(...);\
 	\
-	static IVTEntry entry##ivtNo(ivtNo, interruptEvent##ivtNo);\
+	IVTEntry entry##ivtNo(ivtNo, interruptEvent##ivtNo);\
 	\
 	void interrupt interruptEvent##ivtNo(...){\
 		entry##ivtNo.signal();\
 		if(old)\
 			entry##ivtNo.callOld();\
-		dispatch();\
+		\
 	}
 
 #endif /* PREPENT_H_ */

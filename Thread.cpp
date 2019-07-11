@@ -4,8 +4,12 @@
 
 class PCB;
 
+extern volatile BOOL lockFlag;
+
 Thread::Thread(StackSize stackSize, Time timeSlice){
+	lock();
     myPCB = new PCB(this, stackSize, timeSlice);
+    unlock();
 }
 
 Thread::~Thread(){

@@ -9,7 +9,11 @@ typedef unsigned char IVTNo;
 class KernelEv{
 public:
 	PCB * owner;
+	#ifdef SEM_EVENT
 	KernelSem * sem;
+	#endif
+
+
 	IVTNo ivtNo;
 
 	KernelEv(IVTNo ivtNo);

@@ -2,11 +2,15 @@
 #include "Semaphor.h"
 #include "KSemaphr.h"
 
+extern volatile BOOL lockFlag;
+
 Semaphore::Semaphore(int init){
-  myImpl = new KernelSem(init);
+	lock();
+	myImpl = new KernelSem(init);
+	unlock();
 }
 Semaphore::~Semaphore(){
-    delete myImpl;
+    //delete myImpl;
 }
 
 int Semaphore::wait(Time maxTimeToWait){
