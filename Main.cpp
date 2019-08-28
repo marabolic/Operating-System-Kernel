@@ -15,9 +15,8 @@ int main(int argc, char* argv[]){
 	int result = userMain(argc, argv);
 
 	restore();
-
+	//assert(0);
 	return result;
-
 }
 
 

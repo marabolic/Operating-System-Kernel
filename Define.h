@@ -15,8 +15,6 @@ typedef unsigned BOOL;
 typedef void interrupt(*interruptFun)(...);
 
 
-
-
 #define lock() {\
 		lockFlag++;\
 	}
@@ -26,7 +24,7 @@ typedef void interrupt(*interruptFun)(...);
 }
 
 
-enum STATUS{READY, DONE, BLOCKED, SLEEP, CREATED, IDLE};
+enum STATUS{READY = 0, DONE, BLOCKED, SLEEP, CREATED, IDLE};
 enum{FALSE = 0, TRUE = 1};
 
 #endif

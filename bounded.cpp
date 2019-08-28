@@ -4,8 +4,9 @@
 //   Date:    Jun 2019
 //===========================================================================//
 #include "bounded.h"
-
+#include <ASSERT.H>
 #include <stdlib.h>
+#include "PCB.h"
 
 #include "intLock.h"
 
@@ -33,8 +34,16 @@ int BoundedBuffer::append (char d) {
 }
 
 char BoundedBuffer::take () {
+	assert(PCB::running->status >= 0 && PCB::running->status < 6);
+	//assert(PCB::running->status != READY);
+	assert(PCB::running->status != CREATED);
+	//assert(PCB::running->status != BLOCKED);
+	assert(PCB::running->status != IDLE);
+	assert(PCB::running->status != SLEEP);
+	assert(PCB::running->status != DONE);
 	itemAvailable.wait(0);
 	mutext.wait(0);
+	assert(itemAvailable.val() >= 0);
 		char d = buffer[head];
 		head = (head+1)%Size;
 	mutext.signal();

@@ -1,7 +1,8 @@
 
 #include "PCB.h"
 #include "Thread.h"
-
+#include <IOSTREAM.H>
+extern int st;
 class PCB;
 
 extern volatile BOOL lockFlag;

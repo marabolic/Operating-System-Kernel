@@ -31,8 +31,7 @@ public:
     Time time_slice;
 
     STATUS status;
-    //BOOL completed, started;
-   // BOOL lockFlag;
+
 
     BOOL signalFlag;
     

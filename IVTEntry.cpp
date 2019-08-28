@@ -10,18 +10,20 @@ KernelEv * evArr[256];
 
 IVTEntry::IVTEntry(IVTNo ivtNo, interruptFun newInt):ivtNo(ivtNo){
 	#ifndef BCC_BLOCK_IGNORE
+	//asm cli;
 	oldInt = getvect(ivtNo);
 	setvect(ivtNo, newInt);
+	//asm sti;
 	#endif
 }
 
 IVTEntry::~IVTEntry(){
     #ifndef BCC_BLOCK_IGNORE
-	asm cli;
+	//asm cli;
 	setvect(ivtNo, oldInt);
-	asm sti;
+	//asm sti;
 	#endif
-	//callold
+	callOld();
 }
 
 void IVTEntry::signal() {

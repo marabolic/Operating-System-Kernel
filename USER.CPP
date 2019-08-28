@@ -3,9 +3,10 @@
 //   File:    user.cpp
 //   Date:    Jun 2019
 //===========================================================================//
-#include <iostream.h>
+
 #include <stdlib.h>
 #include <assert.h>
+#include <IOSTREAM.H>
 
 #include "bounded.h"
 #include "intLock.h"
@@ -17,7 +18,7 @@
 //---------------------------------------------------------------------------//
 //  Otkomentarisati ukoliko se testiraju signali
 //---------------------------------------------------------------------------//
-// #define SIGNAL
+//#define SIGNAL
 //---------------------------------------------------------------------------//
 
 //---------------------------------------------------------------------------//
@@ -27,6 +28,8 @@
 Time TIME_SLICE = 2;   // 0 ili defaultTimeSlice
 
 int N = 3;            // 1 <= N <= 19
+
+volatile int check = 0;
 
 //---------------------------------------------------------------------------//
 
@@ -103,6 +106,7 @@ void Consumer::run () {
 	int i = 0;
 	while(!theEnd) {
 		char d = myBuffer->take();
+		//assert(PCB::running->status == READY);
 		consume(d);
 		if (i++ == 40) {
 			assert(1 != sleep.wait(5));
@@ -113,13 +117,18 @@ void Consumer::run () {
 	intLock
 	cout<<endl<<"ESC pressed - empty the buffer!"<<endl;
 	intUnlock
+
+	//assert(PCB::running->status == READY);
 	while (myBuffer->fullCount()){
 		char d = myBuffer->take();
 		consume(d);
+		check = 1;
+		//assert(PCB::running -> status == READY);
 		dispatch();
 	}
 	
-	
+
+
 	intLock
 	cout<<endl<<"Happy End"<<endl;
 	intUnlock
@@ -147,15 +156,15 @@ int userMain (int argc, char* argv[])
 	}
 	int buffSize = atoi(argv[1]);
 	N = atoi(argv[2]);
-	N = N>19 ? 19 : N;
+	//N = N>19 ? 19 : N;
 	TIME_SLICE = atoi(argv[3]);
-	
+	/*
 	if(buffSize<N) {
 		cout<<"Number of Producers is larger than Buffer size!"<<endl;
 		intUnlock
 		return 1;
 	}
-
+	*/
 #ifdef SIGNAL
 	Thread *current = Thread::getThreadById(Thread::getRunningId());
 	current->registerHandler(1, signal1);
@@ -203,7 +212,7 @@ int userMain (int argc, char* argv[])
 
 	for (i=0; i<N; i++){
 		delete pro[i];
-	}  
+	}
 	delete [] pro;
 	delete kev;
 	delete con;

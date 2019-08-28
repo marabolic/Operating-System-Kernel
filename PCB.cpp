@@ -5,7 +5,7 @@
 
 extern int syncPrintf(const char *format, ...);
 extern void tick();
-
+extern volatile int check;
 extern volatile BOOL lockFlag;
 
 void interrupt timer(...);
@@ -47,7 +47,8 @@ PCB::PCB(Thread *myThread, StackSize stackSize, Time timeSlice) {
     sem = new KernelSem(0);
     slist = new SignalList();
     status = CREATED;
-    /*
+#ifdef SIGNAL
+
     if (parent != NULL){
     	lock();
 		for (int i = 0; i < 16; i ++)
@@ -62,30 +63,33 @@ PCB::PCB(Thread *myThread, StackSize stackSize, Time timeSlice) {
 	    }
 	    unlock();
     }
-    else{*/
+    else{
     	for (int i = 0; i < 16; i ++)
     		flagMaskLocal[i] = 0;
 
-        //for (int j = 0; j < 16; j++)
-        	//handlerList[j] = new SignalHList();
-   // }
+        for (int j = 0; j < 16; j++)
+        	handlerList[j] = new SignalHList();
+    }
 
+
+    handlerList[0]->add(PCB::signalZero);
+#endif
     tlist.add(this);
-    //handlerList[0]->add(PCB::signalZero);
-
 }
 
 
 PCB::~PCB() {
-	lock();
+	//lock();
 	tlist.remove(this);
 	delete sem;
 	delete []stack;
 	parent = NULL;
-	//for (int j = 0; j < 16; j++)
-		//delete handlerList[j];
-	//delete slist;
-	unlock();
+#ifdef SIGNAL
+	for (int j = 0; j < 16; j++)
+		delete handlerList[j];
+	delete slist;
+#endif
+	//unlock();
 }
 
 
@@ -134,30 +138,35 @@ void PCB::idleFun(){
 
 	while(1){
 
-		for (int i = 0; i < 30000; i++) {
-			for (int j = 0; j < 30000; j++);
-		}
+		//for (int i = 0; i < 30000; i++) {
+			//for (int j = 0; j < 30000; j++);
+		//}
 
-		lock();
+		//lock();
 		//cout << "idle\n";
-		cout << flush;
-		unlock();
+		//cout << flush;
+		//unlock();
 	}
 }
 
-int context_switch_req = 0;
+//int context_switch_req = 0;
 
  void PCB::wrapper() {
      PCB::running->my_thread->run();
      lock();
      if (PCB::running->sem->val() < 0)
     	 PCB::running->sem->signal(-PCB::running->sem->val());
-     //PCB::running->slist->add(2);
-     //PCB::running->processSignals();
-     cout << flush;
+#ifdef SIGNAL
+     PCB::running->slist->add(2);
+     PCB::running->processSignals();
+#endif
+     // cout << flush;
+     // fflush(stdout);
      PCB::running->status = DONE;
-    // if ( PCB::running->parent != NULL)
-    // PCB::running->slist->add(1);
+#ifdef SIGNAL
+    if ( PCB::running->parent != NULL)
+    PCB::running->slist->add(1);
+#endif
      unlock();
      dispatch();
      assert(0);
@@ -197,14 +206,18 @@ void restoreTimer(){
 		 (*oldTimer)();
 
 		 PCB::klist.decrementTime();
-
-		 if (PCB::running->time_slice == 0)
+		 //for(int l = 0; l < 1000; l++)
+			 //for(int t = 0; t < 1000; t++)
+		 if (PCB::running->time_slice == 0) {
+			 assert(0);
 			 return;
-		 PCB::running->timeLeft--;
+		 }
 
+
+		 PCB::running->timeLeft--;
 	 }
 
-	 if(PCB::running->timeLeft <= 0 || PCB::timerFlag == 0 || context_switch_req){
+	 if(PCB::running->timeLeft == 0 || PCB::timerFlag == 0){
 		 if (!lockFlag) {
 
 			#ifndef BCC_BLOCK_IGNORE
@@ -221,11 +234,20 @@ void restoreTimer(){
 				//syncPrintf("put \n");
 				Scheduler::put(PCB::running);
 			}
+
+
 			//syncPrintf("get \n");
 			PCB::running = Scheduler::get();
+			if (check == 1){
+				//;
+				//assert(PCB::running != PCB::main);
+				//assert(PCB::running != NULL);
+			}
 
 			if(PCB::running == NULL)
 				PCB::running = PCB::idle;
+
+			//assert(PCB::running->status == READY || PCB::running->status == IDLE);
 
 
 			tsp = PCB::running->sp;
@@ -239,19 +261,20 @@ void restoreTimer(){
 			_BP = tbp;
 			#endif
 		 }
-		 else {
-			 context_switch_req = 1;
-		 }
+
 
 		PCB::running->timeLeft = PCB::running->time_slice;
 	}
 
 	PCB::timerFlag = 1;
-	context_switch_req = 0;
-	//lock();
-	//PCB::running->processSignals();
-	//unlock();
+
+#ifdef SIGNAL
+	lock();
+	PCB::running->processSignals();
+	unlock();
+#endif
  }
+
 
  void initTimer(){
  #ifndef BCC_BLOCK_IGNORE
@@ -321,14 +344,8 @@ void restoreTimer(){
 
  void PCB::dispatch(){
 
-#ifndef BCC_BLOCK_IGNORE
-//asm cli;
-#endif
  	PCB::timerFlag = 0;
  	timer();
-#ifndef BCC_BLOCK_IGNORE
-//asm sti;
-#endif
 
   }
 

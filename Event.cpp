@@ -2,12 +2,9 @@
 #include "Event.h"
 #include "KEvent.h"
 
-extern volatile BOOL lockFlag;
 
 Event::Event(IVTNo ivtNo){
-	//lock();
     myImpl = new KernelEv(ivtNo);
-    //unlock();
 }
 	
 Event::~Event(){

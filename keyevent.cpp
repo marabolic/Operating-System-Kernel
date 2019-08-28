@@ -5,7 +5,7 @@
 //===========================================================================//
 #include "keyevent.h"
 
-#include <iostream.h>
+#include <IOSTREAM.H>
 #include <dos.h>
 
 #include "bounded.h"

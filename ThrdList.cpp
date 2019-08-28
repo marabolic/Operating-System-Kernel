@@ -11,6 +11,8 @@
 #include "ThrdList.h"
 #include "PCB.h"
 #include "Define.h"
+#include <IOSTREAM.H>
+extern int st;
 
 extern volatile BOOL lockFlag;
 

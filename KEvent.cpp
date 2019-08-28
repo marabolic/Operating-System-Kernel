@@ -1,6 +1,7 @@
 
 #include "KEvent.h"
 #include "Define.h"
+
 extern volatile BOOL lockFlag;
 
 extern KernelEv *evArr[256];
@@ -17,24 +18,24 @@ KernelEv::KernelEv(IVTNo ivtNo){
 }
 	
 KernelEv::~KernelEv(){
-	lock();
+	//lock();
 #ifdef SEM_EVENT
 	delete sem;
 #endif
 	owner = NULL;
 	evArr[ivtNo] = NULL;
-	unlock();
+	//unlock();
 }
 
 
 void KernelEv::wait(){
 #ifdef SEM_EVENT
-	asm pushf;
-	asm cli;
+	//asm pushf;
+	//asm cli;
 	if (PCB::running == owner){
 		sem->wait(0);
 	}
-	asm popf;
+	//asm popf;
 #else
 	if (PCB::running == owner){
 		owner->status = BLOCKED;
@@ -45,13 +46,13 @@ void KernelEv::wait(){
     
 void KernelEv::signal(){
 #ifdef SEM_EVENT
-	asm pushf;
-	asm cli;
+	//asm pushf;
+	//asm cli;
 	if (sem->val() == -1){
 		sem->signal(0);
 	}
 
-	asm popf;
+	//asm popf;
 #else
 	lock();
 	if (owner->status == BLOCKED){

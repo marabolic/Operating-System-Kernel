@@ -1,6 +1,8 @@
 
 #include "Semaphor.h"
 #include "KSemaphr.h"
+#include <IOSTREAM.H>
+extern int st;
 
 extern volatile BOOL lockFlag;
 
@@ -10,7 +12,7 @@ Semaphore::Semaphore(int init){
 	unlock();
 }
 Semaphore::~Semaphore(){
-    //delete myImpl;
+    delete myImpl;
 }
 
 int Semaphore::wait(Time maxTimeToWait){

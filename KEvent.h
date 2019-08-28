@@ -4,7 +4,7 @@
 #define _kevent_h_
 
 #include  "KSemaphr.h"
-
+#define SEM_EVENT
 typedef unsigned char IVTNo;
 class KernelEv{
 public:

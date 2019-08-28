@@ -1,6 +1,8 @@
 
 #include "KSemaphr.h"
 #include "SemList.h"
+#include <IOSTREAM.H>
+extern int st;
 
 extern int syncPrintf(const char *format, ...);
 
@@ -29,6 +31,7 @@ void KernelSem::block(Time time) {
 	PCB::running->status = BLOCKED;
     blocked->insert(PCB::running, time);
     unlock();
+    assert(lockFlag == 0);
     dispatch();
     lock();
 
@@ -44,6 +47,7 @@ void KernelSem::deblock(){
 }
 
 int KernelSem::wait(Time maxTimeToWait){
+
 	lock();
 	PCB::running->signalFlag = 1;
 	if (--value < 0){
@@ -58,7 +62,7 @@ int KernelSem::signal(int n){
 
 	lock();
 	if (n == 0){
-		if (value++ < 0){
+		if (value++ < 0) {
 			deblock();
 		}
 		unlock();

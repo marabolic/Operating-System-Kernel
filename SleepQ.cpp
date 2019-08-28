@@ -77,6 +77,7 @@ void SleepQueue::decTime(){
 					Node * old = temp;
 					temp = temp->next;
 					old->pcb->signalFlag=0;
+					old->pcb->status = READY;
 					Scheduler::put(old->pcb);
 					delete old;
 					len--;
@@ -87,6 +88,7 @@ void SleepQueue::decTime(){
 					temp = temp->next;
 					first = temp;
 					old->pcb->signalFlag=0;
+					old->pcb->status = READY;
 					Scheduler::put(old->pcb);
 					delete old;
 					len--;
