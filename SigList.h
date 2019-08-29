@@ -22,7 +22,7 @@ public:
 		~SignalList();
 
 		void add(SignalId );
-		void remove(SignalId );
+		void remove(Node *);
 		void removeAll();
 
 

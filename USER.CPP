@@ -18,7 +18,7 @@
 //---------------------------------------------------------------------------//
 //  Otkomentarisati ukoliko se testiraju signali
 //---------------------------------------------------------------------------//
-//#define SIGNAL
+#define SIGNAL
 //---------------------------------------------------------------------------//
 
 //---------------------------------------------------------------------------//
@@ -200,12 +200,15 @@ int userMain (int argc, char* argv[])
 	current->unblockSignal(1);
 	Semaphore timer(0);
 	timer.wait(10);
+
 	if (N > 1) {
 		pro[0]->signal(5);
 		// Kill thread
+
 		pro[0]->signal(0);
 
 		signalTest.wait(0);
+
 	}
 #endif
 

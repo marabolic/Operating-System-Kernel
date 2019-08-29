@@ -34,16 +34,16 @@ void SignalList::add(SignalId id){
 	last = n;
 }
 
-void SignalList::remove(SignalId id){
+void SignalList::remove(SignalList::Node * x){
 	Node * temp = first, *prev = NULL;
-	while (temp && temp->id != id) {
+	while (temp && temp != x) {
 		prev = temp;
 		temp = temp->next;
 	}
 	if (temp == NULL) return;
 
 	if (temp == last)
-			last = prev;
+		last = prev;
 	if (prev != NULL){
 		prev->next = temp->next;
 		Node * old = temp;

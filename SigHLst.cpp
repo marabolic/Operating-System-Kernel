@@ -6,6 +6,7 @@
  */
 
 #include "SigHLst.h"
+#include "PCB.h"
 #include "Define.h"
 
 
@@ -115,6 +116,8 @@ void SignalHList::processHandlers() {
 		#ifndef BCC_BLOCK_IGNORE
 		asm popf;
 		#endif
+		if (PCB::running->status == DONE)
+			break;
 		temp = temp->next;
 	}
 }

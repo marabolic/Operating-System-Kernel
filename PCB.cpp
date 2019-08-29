@@ -2,6 +2,8 @@
 
 #include "PCB.h"
 #include <iostream.h>
+#define SIGNAL
+#define SIGNAL_COUNT 16
 
 extern int syncPrintf(const char *format, ...);
 extern void tick();
@@ -47,13 +49,12 @@ PCB::PCB(Thread *myThread, StackSize stackSize, Time timeSlice) {
     sem = new KernelSem(0);
     slist = new SignalList();
     status = CREATED;
-#ifdef SIGNAL
 
     if (parent != NULL){
     	lock();
-		for (int i = 0; i < 16; i ++)
+		for (int i = 0; i < SIGNAL_COUNT; i ++)
 			flagMaskLocal[i] = parent->flagMaskLocal[i];
-	    for (int j = 0; j < 16; j++){
+	    for (int j = 0; j < SIGNAL_COUNT; j++){
 	    	handlerList[j] = new SignalHList();
 	    	 SignalHList::Node * temp = parent->handlerList[j]->first;
 	    		 while (temp) {
@@ -64,16 +65,16 @@ PCB::PCB(Thread *myThread, StackSize stackSize, Time timeSlice) {
 	    unlock();
     }
     else{
-    	for (int i = 0; i < 16; i ++)
+    	for (int i = 0; i < SIGNAL_COUNT; i ++)
     		flagMaskLocal[i] = 0;
 
-        for (int j = 0; j < 16; j++)
+        for (int j = 0; j < SIGNAL_COUNT; j++)
         	handlerList[j] = new SignalHList();
+        handlerList[0]->add(PCB::signalZero);
     }
 
 
-    handlerList[0]->add(PCB::signalZero);
-#endif
+
     tlist.add(this);
 }
 
@@ -84,11 +85,11 @@ PCB::~PCB() {
 	delete sem;
 	delete []stack;
 	parent = NULL;
-#ifdef SIGNAL
-	for (int j = 0; j < 16; j++)
+
+	for (int j = 0; j < SIGNAL_COUNT; j++)
 		delete handlerList[j];
 	delete slist;
-#endif
+
 	//unlock();
 }
 
@@ -158,14 +159,15 @@ void PCB::idleFun(){
     	 PCB::running->sem->signal(-PCB::running->sem->val());
 #ifdef SIGNAL
      PCB::running->slist->add(2);
-     PCB::running->processSignals();
+     //PCB::running->processSignals();
+     //TODO
 #endif
      // cout << flush;
      // fflush(stdout);
      PCB::running->status = DONE;
 #ifdef SIGNAL
     if ( PCB::running->parent != NULL)
-    PCB::running->slist->add(1);
+    	PCB::running->parent->slist->add(1);
 #endif
      unlock();
      dispatch();
@@ -238,11 +240,7 @@ void restoreTimer(){
 
 			//syncPrintf("get \n");
 			PCB::running = Scheduler::get();
-			if (check == 1){
-				//;
-				//assert(PCB::running != PCB::main);
-				//assert(PCB::running != NULL);
-			}
+
 
 			if(PCB::running == NULL)
 				PCB::running = PCB::idle;
@@ -268,11 +266,36 @@ void restoreTimer(){
 
 	PCB::timerFlag = 1;
 
-#ifdef SIGNAL
+
 	lock();
 	PCB::running->processSignals();
 	unlock();
-#endif
+	if (PCB::running->status == DONE){
+#ifndef BCC_BLOCK_IGNORE
+			 tsp = _SP;
+			 tss = _SS;
+			 tbp = _BP;
+			#endif
+			PCB::running->sp = tsp;
+			PCB::running->ss = tss;
+			PCB::running->bp = tbp;
+
+			PCB::running = Scheduler::get();
+
+			if(PCB::running == NULL)
+				PCB::running = PCB::idle;
+
+			tsp = PCB::running->sp;
+			tss = PCB::running->ss;
+			tbp = PCB::running->bp;
+
+
+			#ifndef BCC_BLOCK_IGNORE
+			_SP = tsp;
+			_SS = tss;
+			_BP = tbp;
+			#endif
+	}
  }
 
 
@@ -288,26 +311,26 @@ void restoreTimer(){
 	 while (temp) {
 		 if (flagMaskLocal[temp->id] == 0 && flagMaskGlobal[temp->id] == 0) {
 			 handlerList[temp->id]->processHandlers();
-			 slist->remove(temp->id);
+			 slist->remove(temp);
+			 if (PCB::running->status == DONE)
+				 break;
 		 }
 		 temp = temp->next;
 	 }
  }
 
  void PCB::signalZero(){
-	 if (running->parent != NULL)
+	 if (running == main) return;
 	 if (running->sem->val() < 0)
 		 running->sem->signal(-running->sem->val());
 	 running->slist->add(2);
-	 running->processSignals();
+	 //running->processSignals();
+	 //TODO
 	 running->status = DONE;
-	 running->slist->add(1);
+	 running->parent->slist->add(1);
  }
 
  void PCB::signal(SignalId signal){
-	 if (signal == 0){
-
-	 }
 	 if (signal == 1 || signal == 2 || signal > 15) return;
 	 slist->add(signal);
  }
