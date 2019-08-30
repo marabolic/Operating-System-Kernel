@@ -42,9 +42,12 @@ PCB::PCB(Thread *myThread, StackSize stackSize, Time timeSlice) {
     time_slice = timeSlice;
     stack = NULL;
 
-    if (running != main)
+    if (PCB::main != NULL)
     	parent = running;
-    else parent = NULL;
+    else{
+    	parent = NULL;
+    	PCB::main = this;
+    }
 
     sem = new KernelSem(0);
     slist = new SignalList();
@@ -80,17 +83,16 @@ PCB::PCB(Thread *myThread, StackSize stackSize, Time timeSlice) {
 
 
 PCB::~PCB() {
-	//lock();
+	lock();
 	tlist.remove(this);
 	delete sem;
-	delete []stack;
 	parent = NULL;
 
 	for (int j = 0; j < SIGNAL_COUNT; j++)
 		delete handlerList[j];
 	delete slist;
 
-	//unlock();
+	unlock();
 }
 
 
@@ -138,15 +140,6 @@ Thread * PCB::getThreadById(ID id){
 void PCB::idleFun(){
 
 	while(1){
-
-		//for (int i = 0; i < 30000; i++) {
-			//for (int j = 0; j < 30000; j++);
-		//}
-
-		//lock();
-		//cout << "idle\n";
-		//cout << flush;
-		//unlock();
 	}
 }
 
@@ -211,7 +204,7 @@ void restoreTimer(){
 		 //for(int l = 0; l < 1000; l++)
 			 //for(int t = 0; t < 1000; t++)
 		 if (PCB::running->time_slice == 0) {
-			 assert(0);
+			 //assert(0);
 			 return;
 		 }
 
@@ -241,7 +234,6 @@ void restoreTimer(){
 			//syncPrintf("get \n");
 			PCB::running = Scheduler::get();
 
-
 			if(PCB::running == NULL)
 				PCB::running = PCB::idle;
 
@@ -266,35 +258,32 @@ void restoreTimer(){
 
 	PCB::timerFlag = 1;
 
+	if(!lockFlag) {
+		lock();
+		PCB::processSignals();
+		unlock();
 
-	lock();
-	PCB::running->processSignals();
-	unlock();
-	if (PCB::running->status == DONE){
-#ifndef BCC_BLOCK_IGNORE
-			 tsp = _SP;
-			 tss = _SS;
-			 tbp = _BP;
-			#endif
-			PCB::running->sp = tsp;
-			PCB::running->ss = tss;
-			PCB::running->bp = tbp;
+		while (PCB::running->status == DONE){
+				PCB::running = Scheduler::get();
 
-			PCB::running = Scheduler::get();
-
-			if(PCB::running == NULL)
-				PCB::running = PCB::idle;
-
-			tsp = PCB::running->sp;
-			tss = PCB::running->ss;
-			tbp = PCB::running->bp;
+				if(PCB::running == NULL)
+					PCB::running = PCB::idle;
 
 
-			#ifndef BCC_BLOCK_IGNORE
-			_SP = tsp;
-			_SS = tss;
-			_BP = tbp;
-			#endif
+				tsp = PCB::running->sp;
+				tss = PCB::running->ss;
+				tbp = PCB::running->bp;
+
+
+				#ifndef BCC_BLOCK_IGNORE
+				_SP = tsp;
+				_SS = tss;
+				_BP = tbp;
+				#endif
+				lock();
+				PCB::processSignals();
+				unlock();
+		}
 	}
  }
 
@@ -306,28 +295,35 @@ void restoreTimer(){
  #endif
  }
 
+
  void PCB::processSignals(){
-	 SignalList::Node * temp = slist->first;
+	 SignalList::Node * temp = running->slist->first;
 	 while (temp) {
-		 if (flagMaskLocal[temp->id] == 0 && flagMaskGlobal[temp->id] == 0) {
-			 handlerList[temp->id]->processHandlers();
-			 slist->remove(temp);
-			 if (PCB::running->status == DONE)
-				 break;
+		 if (running->flagMaskLocal[temp->id] == 0 && flagMaskGlobal[temp->id] == 0) {
+			 running->handlerList[temp->id]->processHandlers();
+			 SignalList::Node* old = temp;
+			 temp = temp->next;
+			 running->slist->remove(old);
+			 if (PCB::running->status == DONE){
+				 return;
+			 }
 		 }
-		 temp = temp->next;
+		 else {
+			 temp = temp->next;
+		 }
 	 }
  }
 
  void PCB::signalZero(){
-	 if (running == main) return;
+	 if (running == PCB::main) return;
 	 if (running->sem->val() < 0)
 		 running->sem->signal(-running->sem->val());
 	 running->slist->add(2);
 	 //running->processSignals();
 	 //TODO
-	 running->status = DONE;
 	 running->parent->slist->add(1);
+	 running->status = DONE;
+
  }
 
  void PCB::signal(SignalId signal){
@@ -372,4 +368,7 @@ void restoreTimer(){
 
   }
 
+ void PCB::initMainThread(){
+	 PCB::mainThread = new Thread(0,0);
+ }
 

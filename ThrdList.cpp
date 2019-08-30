@@ -74,7 +74,7 @@ PCB * ThreadList::getPCB(int id){
 			unlock();
 			return temp->thread;
 		}
-	temp = temp->next;
+		temp = temp->next;
 	}
 	unlock();
 	return NULL;

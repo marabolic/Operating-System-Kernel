@@ -40,7 +40,7 @@ void SignalList::remove(SignalList::Node * x){
 		prev = temp;
 		temp = temp->next;
 	}
-	if (temp == NULL) return;
+	if (temp == NULL)  assert(0);
 
 	if (temp == last)
 		last = prev;

@@ -76,7 +76,7 @@ public:
 	static ID getRunningId();
 	static Thread * getThreadById(ID id);
 
-	void processSignals();
+	static void processSignals();
 	static void signalZero();
 
 	void signal(SignalId signal);
@@ -90,7 +90,7 @@ public:
 
     static void dispatch();
     static void wrapper();
-
+    static void initMainThread();
 
 };
 

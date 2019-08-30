@@ -60,8 +60,7 @@ void unlock() {
 
 
 void init(){
-	//PCB::mainThread = new Thread(0,0);
-	PCB::main = new PCB(NULL,0,0);
+	PCB::initMainThread();
 	PCB::main->status = READY;
 	PCB::running = PCB::main;
 	PCB::initIdle();
@@ -71,7 +70,7 @@ void init(){
 
 void restore(){
 	delete PCB::idle;
-	delete PCB::running;
+	//delete PCB::running;
 	restoreTimer();
 }
 
