@@ -140,6 +140,10 @@ void signal1() {
 	signalTest.signal();
 }
 
+void signal2(){
+	cout << "henlo \n";
+}
+
 #endif
 
 
@@ -168,6 +172,7 @@ int userMain (int argc, char* argv[])
 #ifdef SIGNAL
 	Thread *current = Thread::getThreadById(Thread::getRunningId());
 	current->registerHandler(1, signal1);
+	current->registerHandler(2, signal2);
 	current->blockSignal(1);
 #endif
 
@@ -186,6 +191,7 @@ int userMain (int argc, char* argv[])
 		if (i==0)
 		{
 			pro[i]->registerHandler(5, signal1);
+
 		}
 #endif
 		pro[i]->start();

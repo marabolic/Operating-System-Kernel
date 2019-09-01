@@ -87,12 +87,11 @@ PCB::~PCB() {
 	tlist.remove(this);
 	delete sem;
 	parent = NULL;
-
 	for (int j = 0; j < SIGNAL_COUNT; j++)
 		delete handlerList[j];
 	delete slist;
-
 	unlock();
+
 }
 
 
@@ -208,11 +207,16 @@ void restoreTimer(){
 			 return;
 		 }
 
-
 		 PCB::running->timeLeft--;
 	 }
 
 	 if(PCB::running->timeLeft == 0 || PCB::timerFlag == 0){
+		 if (PCB::running->status == DONE){
+			 lock();
+			 PCB::processSignals();
+			 unlock();
+		 }
+
 		 if (!lockFlag) {
 
 			#ifndef BCC_BLOCK_IGNORE
@@ -304,9 +308,9 @@ void restoreTimer(){
 			 SignalList::Node* old = temp;
 			 temp = temp->next;
 			 running->slist->remove(old);
-			 if (PCB::running->status == DONE){
-				 return;
-			 }
+			 //if (PCB::running->status == DONE){
+				// return;
+			 //}
 		 }
 		 else {
 			 temp = temp->next;

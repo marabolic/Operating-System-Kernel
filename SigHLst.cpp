@@ -116,8 +116,8 @@ void SignalHList::processHandlers() {
 		#ifndef BCC_BLOCK_IGNORE
 		asm popf;
 		#endif
-		if (PCB::running->status == DONE)
-			break;
+		//if (PCB::running->status == DONE)
+			//break;
 		temp = temp->next;
 	}
 }
